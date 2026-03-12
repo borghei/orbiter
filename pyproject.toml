@@ -1,6 +1,6 @@
 [project]
 name = "orbiter-crypto"
-version = "0.2.1"
+version = "0.3.0"
 description = "Lightweight crypto portfolio optimizer. Efficient frontier, HRP, Risk Parity — with real risk metrics and interactive charts."
 readme = "README.md"
 license = {file = "LICENSE"}
@@ -30,6 +30,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dashboard = ["streamlit>=1.30", "plotly>=5.18"]
+ai = ["anthropic>=0.40", "openai>=1.50"]
 dev = ["pytest>=8.0", "pytest-cov", "ruff"]
 
 [project.scripts]

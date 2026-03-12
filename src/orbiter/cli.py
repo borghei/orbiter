@@ -16,6 +16,9 @@ ALL_STRATEGIES = [
     "hrp",
     "regime-aware",
     "factor-max-sharpe",
+    "black-litterman",
+    "sentiment-regime",
+    "yield-adjusted",
 ]
 
 
@@ -316,6 +319,9 @@ def _print_result(result, strategy):
         "hrp": "Hierarchical Risk Parity",
         "regime-aware": "Regime-Aware (adaptive)",
         "factor-max-sharpe": "Factor Model Max Sharpe",
+        "black-litterman": "Black-Litterman",
+        "sentiment-regime": "Sentiment-Enhanced Regime",
+        "yield-adjusted": "DeFi Yield-Adjusted",
     }
 
     display_name = strategy_names.get(strategy, result.strategy)

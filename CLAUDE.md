@@ -1,7 +1,7 @@
 # Orbiter Development Guide
 
 ## Setup
-uv venv && source .venv/bin/activate && uv pip install -e ".[dev,dashboard]"
+uv venv && source .venv/bin/activate && uv pip install -e ".[dev,dashboard,ai]"
 
 ## Commands
 - Run tests: pytest
@@ -15,8 +15,14 @@ uv venv && source .venv/bin/activate && uv pip install -e ".[dev,dashboard]"
 - src/orbiter/data.py — price fetching via ccxt
 - src/orbiter/metrics.py — pure functions, no side effects
 - src/orbiter/covariance.py — covariance matrix estimators
-- src/orbiter/optimize.py — PortfolioOptimizer class, all strategies
+- src/orbiter/optimize.py — PortfolioOptimizer class, 10 strategies
 - src/orbiter/backtest.py — walk-forward engine
+- src/orbiter/black_litterman.py — Black-Litterman model + AI view parsing
+- src/orbiter/ai.py — AI middleware (Claude, OpenAI, Perplexity adapters)
+- src/orbiter/prompts.py — prompt templates for AI analysis
+- src/orbiter/sentiment.py — Fear & Greed, funding rates, exchange flows
+- src/orbiter/defi.py — DeFi yield data from DeFiLlama
+- src/orbiter/regime.py — HMM regime detection + sentiment-enhanced variant
 - src/orbiter/cli.py — Click CLI
 - src/orbiter/dashboard.py — Streamlit app
 
@@ -27,3 +33,4 @@ uv venv && source .venv/bin/activate && uv pip install -e ".[dev,dashboard]"
 - All optimization assumes long-only (no short selling)
 - Default periods_per_year=365 (crypto trades 24/7)
 - Default covariance method: ledoit-wolf
+- AI SDKs imported lazily (inside methods) to avoid hard dependencies

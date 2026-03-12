@@ -32,6 +32,9 @@ class PortfolioOptimizer:
         "hrp",
         "regime-aware",
         "factor-max-sharpe",
+        "black-litterman",
+        "sentiment-regime",
+        "yield-adjusted",
     ]
 
     def __init__(
@@ -41,6 +44,10 @@ class PortfolioOptimizer:
         risk_free_rate: float = 0.0,
         periods_per_year: int = 365,
         factor_model: object | None = None,
+        views: list | None = None,
+        market_caps: pd.Series | None = None,
+        defi_yields: dict | None = None,
+        sentiment_data: object | None = None,
     ):
         self.returns = returns
         self.n_assets = returns.shape[1]
@@ -48,6 +55,10 @@ class PortfolioOptimizer:
         self.risk_free_rate = risk_free_rate
         self.periods_per_year = periods_per_year
         self.factor_model = factor_model
+        self.views = views
+        self.market_caps = market_caps
+        self.defi_yields = defi_yields
+        self.sentiment_data = sentiment_data
 
         self.expected_returns = returns.mean().values * periods_per_year
         self.cov_matrix = get_covariance(
@@ -314,6 +325,86 @@ class PortfolioOptimizer:
             df=df,
         )
 
+    def black_litterman(self) -> OptimizationResult:
+        """Black-Litterman optimization using investor views."""
+        from orbiter.black_litterman import BlackLitterman
+
+        if not self.views:
+            raise ValueError(
+                "views must be provided for black-litterman strategy. "
+                "Pass a list of View objects to PortfolioOptimizer."
+            )
+        bl = BlackLitterman(
+            self.returns,
+            market_caps=self.market_caps,
+            risk_free_rate=self.risk_free_rate,
+            periods_per_year=self.periods_per_year,
+        )
+        result = bl.optimize(self.views)
+        port_returns = self._portfolio_returns_series(result.weights.values)
+        metrics = compute_metrics(
+            port_returns, self.risk_free_rate, self.periods_per_year
+        )
+        return OptimizationResult(
+            weights=result.weights,
+            metrics=metrics,
+            strategy="black-litterman",
+        )
+
+    def sentiment_regime(self) -> OptimizationResult:
+        """Sentiment-enhanced regime-aware optimization."""
+        from orbiter.regime import SentimentRegimeModel
+
+        market_returns = self.returns.mean(axis=1)
+        model = SentimentRegimeModel(n_regimes=3)
+
+        sentiment_df = None
+        if self.sentiment_data is not None:
+            from orbiter.sentiment import sentiment_features
+
+            features = sentiment_features(self.sentiment_data)
+            sentiment_df = pd.DataFrame(
+                [features] * len(market_returns),
+                index=market_returns.index,
+            )
+
+        model.fit(market_returns, sentiment_df)
+        regime = model.current_regime(market_returns, sentiment_df)
+        sub_strategy = model.get_strategy(regime)
+
+        result = self.optimize(sub_strategy)
+        return OptimizationResult(
+            weights=result.weights,
+            metrics=result.metrics,
+            strategy=f"sentiment-regime ({sub_strategy})",
+        )
+
+    def yield_adjusted(self) -> OptimizationResult:
+        """Max Sharpe with DeFi yield-adjusted expected returns."""
+        from orbiter.defi import YieldCollector, adjust_expected_returns
+
+        if self.defi_yields is None:
+            collector = YieldCollector()
+            yields = collector.collect(self.asset_names, use_live=True)
+        else:
+            yields = self.defi_yields
+
+        daily_mu = pd.Series(
+            self.returns.mean().values, index=self.asset_names
+        )
+        adjusted_mu = adjust_expected_returns(daily_mu, yields, weight=1.0)
+
+        original_er = self.expected_returns.copy()
+        self.expected_returns = adjusted_mu.values * self.periods_per_year
+        result = self.max_sharpe()
+        self.expected_returns = original_er
+
+        return OptimizationResult(
+            weights=result.weights,
+            metrics=result.metrics,
+            strategy="yield-adjusted",
+        )
+
     def optimize(self, strategy: str = "max-sharpe") -> OptimizationResult:
         """Run optimization with the named strategy."""
         dispatch = {
@@ -324,6 +415,9 @@ class PortfolioOptimizer:
             "hrp": self.hrp,
             "regime-aware": self.regime_aware,
             "factor-max-sharpe": self.factor_max_sharpe,
+            "black-litterman": self.black_litterman,
+            "sentiment-regime": self.sentiment_regime,
+            "yield-adjusted": self.yield_adjusted,
         }
         if strategy not in dispatch:
             raise ValueError(

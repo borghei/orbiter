@@ -4,13 +4,13 @@
 
 <p align="center">
   <strong>Lightweight, open-source crypto portfolio optimizer.</strong><br>
-  7 optimization strategies, 8 risk metrics, stress testing, factor models — all from a single CLI or interactive dashboard.
+  10 optimization strategies, 8 risk metrics, AI-powered views, DeFi yields, sentiment analysis — all from a single CLI or interactive dashboard.
 </p>
 
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT_+_Commons_Clause-yellow.svg" alt="License"></a>
   <img src="https://img.shields.io/badge/python-3.11+-blue.svg" alt="Python 3.11+">
-  <img src="https://img.shields.io/badge/tests-94%20passing-brightgreen.svg" alt="Tests">
+  <img src="https://img.shields.io/badge/tests-159%20passing-brightgreen.svg" alt="Tests">
 </p>
 
 <p align="center">
@@ -196,6 +196,9 @@ Toggle advanced features in the sidebar:
 | `hrp` | Hierarchical Risk Parity — correlation-based, no return estimates | Robust diversification |
 | `regime-aware` | HMM detects bull/bear/sideways, auto-switches strategy | Adaptive allocation |
 | `factor-max-sharpe` | Max Sharpe using factor-model implied returns | Data-driven views |
+| `black-litterman` | Black-Litterman model with investor views (manual or AI-generated) | Subjective + quantitative |
+| `sentiment-regime` | HMM + Fear & Greed, funding rates, exchange flows | Early regime detection |
+| `yield-adjusted` | Max Sharpe with DeFi staking/lending yields factored in | Yield-aware allocation |
 
 ## Features
 
@@ -271,6 +274,78 @@ Crypto-specific four-factor model:
 ```bash
 orbiter optimize BTC ETH SOL AVAX --strategy factor-max-sharpe --use-factors
 ```
+
+### Black-Litterman with AI Views
+
+Combine market equilibrium with your own views — or let AI generate them:
+
+```python
+from orbiter import BlackLitterman, View, get_ai
+from orbiter.prompts import MARKET_VIEWS_SYSTEM, market_views_prompt
+from orbiter.black_litterman import parse_ai_views
+
+# Manual views
+views = [
+    View(asset="SOL", return_view=0.30, confidence=0.7),
+    View(asset=("ETH", "BTC"), return_view=0.05, confidence=0.6),
+]
+bl = BlackLitterman(returns)
+result = bl.optimize(views)
+
+# Or generate views with AI (Claude, OpenAI, or Perplexity)
+ai = get_ai("claude")  # reads ANTHROPIC_API_KEY from env
+response = ai.generate(MARKET_VIEWS_SYSTEM, market_views_prompt(...))
+views = parse_ai_views(response, assets=["BTC", "ETH", "SOL"])
+result = bl.optimize(views)
+```
+
+Supports three AI providers with a single middleware:
+
+| Provider | Model | Env Variable |
+|---|---|---|
+| Claude | `claude-sonnet-4-20250514` | `ANTHROPIC_API_KEY` |
+| OpenAI | `gpt-4o` | `OPENAI_API_KEY` |
+| Perplexity | `sonar-pro` | `PERPLEXITY_API_KEY` |
+
+```bash
+pip install orbiter-crypto[ai]  # installs anthropic + openai SDKs
+```
+
+### Sentiment-Enhanced Regime Detection
+
+Goes beyond price-only HMM by fusing multiple sentiment signals:
+
+- **Fear & Greed Index** — free API, updated daily
+- **Funding rates** — crowded leverage detection from perpetual futures
+- **Exchange net flows** — coins moving to exchanges = selling pressure
+
+```python
+from orbiter import SentimentCollector
+from orbiter.regime import SentimentRegimeModel
+
+collector = SentimentCollector(exchange="binance")
+sentiment = collector.collect(["BTC", "ETH", "SOL"])
+
+model = SentimentRegimeModel(n_regimes=3)
+model.fit(market_returns, sentiment_features_df)
+regime = model.current_regime(market_returns, sentiment_features_df)
+```
+
+### DeFi Yield-Adjusted Optimization
+
+Staking ETH at 3.5% APY changes the efficient frontier. Orbiter accounts for this:
+
+```python
+from orbiter import YieldCollector
+from orbiter.defi import adjust_expected_returns
+
+yields = YieldCollector().collect(["ETH", "SOL", "ATOM"])
+adjusted_mu = adjust_expected_returns(daily_returns.mean(), yields)
+```
+
+- Pulls live yields from DeFiLlama (7000+ protocols)
+- Falls back to conservative manual estimates if API is down
+- Includes yield reliability scoring (higher APY = more smart contract risk)
 
 ### Transaction Cost Modeling
 
@@ -435,13 +510,18 @@ src/orbiter/
 ├── data_sources.py    # CoinGecko, on-chain metrics
 ├── metrics.py         # Risk & performance metrics
 ├── covariance.py      # Covariance estimation (sample, Ledoit-Wolf, exponential)
-├── optimize.py        # 7 optimization strategies + efficient frontier
+├── optimize.py        # 10 optimization strategies + efficient frontier
 ├── backtest.py        # Walk-forward backtesting engine
 ├── costs.py           # Transaction cost & slippage modeling
 ├── rebalance.py       # Rebalancing simulation (calendar/threshold/hybrid)
-├── regime.py          # HMM regime detection
+├── regime.py          # HMM regime detection + sentiment-enhanced regime
 ├── stress.py          # Monte Carlo & correlation stress testing
 ├── factors.py         # Crypto factor model (market, momentum, size, liquidity)
+├── black_litterman.py # Black-Litterman model with AI-generated views
+├── ai.py              # AI middleware (Claude, OpenAI, Perplexity adapters)
+├── prompts.py         # Prompt templates for AI-powered analysis
+├── sentiment.py       # Fear & Greed, funding rates, exchange flows
+├── defi.py            # DeFi yield data from DeFiLlama
 ├── cli.py             # Click CLI
 └── dashboard.py       # Streamlit interactive dashboard
 ```
