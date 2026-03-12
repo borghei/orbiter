@@ -1,6 +1,7 @@
 """Tests for walk-forward backtesting."""
 
 import pytest
+
 from orbiter.backtest import WalkForwardBacktest
 
 

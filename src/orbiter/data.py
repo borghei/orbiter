@@ -45,9 +45,7 @@ class PriceLoader:
         [timestamp, open, high, low, close, volume].
         """
         exchange = self._get_exchange()
-        since = int(
-            (datetime.now(timezone.utc).timestamp() - days * 86400) * 1000
-        )
+        since = int((datetime.now(timezone.utc).timestamp() - days * 86400) * 1000)
         result = {}
 
         for symbol in symbols:
@@ -105,16 +103,14 @@ class PriceLoader:
         prices = prices.dropna()
 
         if len(prices) < 30:
-            raise ValueError(
-                f"Only {len(prices)} overlapping data points. Need at least 30."
-            )
+            raise ValueError(f"Only {len(prices)} overlapping data points. Need at least 30.")
 
         dropped = sum(len(df) for df in ohlcv.values()) / len(ohlcv) - len(prices)
         if dropped > 0.1 * len(prices):
             import warnings
 
             warnings.warn(
-                f"Dropped {dropped:.0f} rows (~{dropped/len(prices)*100:.0f}%) "
+                f"Dropped {dropped:.0f} rows (~{dropped / len(prices) * 100:.0f}%) "
                 "to align dates across assets.",
                 stacklevel=2,
             )

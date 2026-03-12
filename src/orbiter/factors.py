@@ -7,7 +7,6 @@ from dataclasses import dataclass
 import numpy as np
 import pandas as pd
 
-
 CRYPTO_FACTORS = ["market", "momentum", "size", "liquidity"]
 
 
@@ -58,9 +57,6 @@ class CryptoFactorModel:
 
     def _compute_momentum_factor(self) -> pd.Series:
         """Momentum: long winners, short losers over lookback period."""
-        rolling_ret = self.returns.rolling(self.momentum_lookback).sum()
-        n = self.n_assets
-
         def _mom_return(row):
             if row.isna().any():
                 return 0.0
@@ -85,8 +81,7 @@ class CryptoFactorModel:
                 losers = ranked <= q25
                 if winners.sum() > 0 and losers.sum() > 0:
                     momentum.iloc[i] = (
-                        self.returns.iloc[i][winners].mean()
-                        - self.returns.iloc[i][losers].mean()
+                        self.returns.iloc[i][winners].mean() - self.returns.iloc[i][losers].mean()
                     )
                 else:
                     momentum.iloc[i] = 0.0
@@ -132,12 +127,14 @@ class CryptoFactorModel:
     def fit(self) -> FactorExposures:
         """Run time-series regressions to get factor loadings per asset."""
         # Build factor returns matrix
-        factors = pd.DataFrame({
-            "market": self._compute_market_factor(),
-            "momentum": self._compute_momentum_factor(),
-            "size": self._compute_size_factor(),
-            "liquidity": self._compute_liquidity_factor(),
-        })
+        factors = pd.DataFrame(
+            {
+                "market": self._compute_market_factor(),
+                "momentum": self._compute_momentum_factor(),
+                "size": self._compute_size_factor(),
+                "liquidity": self._compute_liquidity_factor(),
+            }
+        )
 
         # Drop initial NaN rows
         valid = factors.notna().all(axis=1) & self.returns.notna().all(axis=1)
@@ -198,9 +195,7 @@ class CryptoFactorModel:
             # Use historical means, annualized
             premia = self._exposures.factor_returns.mean().values * 365
         else:
-            premia = np.array([
-                factor_risk_premia.get(f, 0.0) for f in CRYPTO_FACTORS
-            ])
+            premia = np.array([factor_risk_premia.get(f, 0.0) for f in CRYPTO_FACTORS])
 
         return self._exposures.loadings.values @ premia
 

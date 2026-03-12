@@ -1,10 +1,9 @@
 """Tests for data sources (mocked HTTP calls)."""
 
-import json
 from unittest.mock import MagicMock, patch
 
-import pandas as pd
 import pytest
+
 from orbiter.data_sources import CoinGeckoClient, OnChainMetrics
 
 

@@ -2,6 +2,7 @@
 
 import numpy as np
 import pytest
+
 from orbiter.covariance import (
     exponential_covariance,
     get_covariance,

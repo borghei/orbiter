@@ -1,8 +1,7 @@
 """Tests for risk metrics."""
 
-import numpy as np
 import pandas as pd
-import pytest
+
 from orbiter.metrics import (
     annualized_return,
     annualized_volatility,
@@ -82,8 +81,14 @@ def test_omega_ratio(sample_returns):
 def test_compute_metrics_keys(sample_returns):
     m = compute_metrics(sample_returns["BTC"])
     expected_keys = {
-        "annualized_return", "annualized_volatility", "sharpe_ratio",
-        "sortino_ratio", "max_drawdown", "calmar_ratio", "cvar_95", "omega_ratio",
+        "annualized_return",
+        "annualized_volatility",
+        "sharpe_ratio",
+        "sortino_ratio",
+        "max_drawdown",
+        "calmar_ratio",
+        "cvar_95",
+        "omega_ratio",
     }
     assert set(m.keys()) == expected_keys
 

@@ -3,7 +3,8 @@
 import numpy as np
 import pandas as pd
 import pytest
-from orbiter.regime import Regime, RegimeModel, REGIME_STRATEGY_MAP
+
+from orbiter.regime import REGIME_STRATEGY_MAP, Regime, RegimeModel
 
 
 @pytest.fixture

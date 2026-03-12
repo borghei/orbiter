@@ -9,8 +9,13 @@ from rich.table import Table
 console = Console()
 
 ALL_STRATEGIES = [
-    "max-sharpe", "min-vol", "min-cvar", "risk-parity", "hrp",
-    "regime-aware", "factor-max-sharpe",
+    "max-sharpe",
+    "min-vol",
+    "min-cvar",
+    "risk-parity",
+    "hrp",
+    "regime-aware",
+    "factor-max-sharpe",
 ]
 
 
@@ -50,9 +55,7 @@ def optimize(symbols, strategy, days, timeframe, cov_method, exchange, use_facto
         loader = PriceLoader(exchange=exchange)
         returns = loader.get_returns(list(symbols), timeframe=timeframe, days=days)
 
-    console.print(
-        f"\n[dim]Loaded {len(returns)} days of data for {len(symbols)} assets[/dim]\n"
-    )
+    console.print(f"\n[dim]Loaded {len(returns)} days of data for {len(symbols)} assets[/dim]\n")
 
     factor_model = None
     if use_factors or strategy == "factor-max-sharpe":
@@ -63,9 +66,7 @@ def optimize(symbols, strategy, days, timeframe, cov_method, exchange, use_facto
             factor_model.fit()
 
     with console.status(f"[bold cyan]Optimizing ({strategy})..."):
-        optimizer = PortfolioOptimizer(
-            returns, cov_method=cov_method, factor_model=factor_model
-        )
+        optimizer = PortfolioOptimizer(returns, cov_method=cov_method, factor_model=factor_model)
         result = optimizer.optimize(strategy)
 
     _print_result(result, strategy)
@@ -85,13 +86,14 @@ def optimize(symbols, strategy, days, timeframe, cov_method, exchange, use_facto
 @click.option("--cov-method", default="ledoit-wolf")
 @click.option("--maker-fee", default=0.001, help="Maker fee (default 0.1%).")
 @click.option("--taker-fee", default=0.001, help="Taker fee (default 0.1%).")
-def backtest(symbols, strategy, days, train_days, test_days, exchange, cov_method, maker_fee, taker_fee):
+def backtest(
+    symbols, strategy, days, train_days, test_days, exchange, cov_method, maker_fee, taker_fee
+):
     """Run walk-forward backtest.
 
     Example: orbiter backtest BTC ETH SOL --strategy hrp --train-days 90 --test-days 30
     """
     from orbiter.backtest import WalkForwardBacktest
-    from orbiter.costs import FeeSchedule
     from orbiter.data import PriceLoader
     from orbiter.metrics import compute_metrics
 
@@ -99,11 +101,7 @@ def backtest(symbols, strategy, days, train_days, test_days, exchange, cov_metho
         loader = PriceLoader(exchange=exchange)
         returns = loader.get_returns(list(symbols), timeframe="1d", days=days)
 
-    console.print(
-        f"\n[dim]Loaded {len(returns)} days for {len(symbols)} assets[/dim]\n"
-    )
-
-    fee_schedule = FeeSchedule(maker=maker_fee, taker=taker_fee)
+    console.print(f"\n[dim]Loaded {len(returns)} days for {len(symbols)} assets[/dim]\n")
 
     with console.status(f"[bold cyan]Running walk-forward backtest ({strategy})..."):
         bt = WalkForwardBacktest(
@@ -123,7 +121,10 @@ def backtest(symbols, strategy, days, train_days, test_days, exchange, cov_metho
     equal_metrics = compute_metrics(equal_oos)
 
     console.print(f"[bold]Walk-Forward Backtest: {strategy}[/bold]")
-    console.print(f"[dim]Train: {train_days}d | Test: {test_days}d | Rebalances: {len(result.rebalance_dates)}[/dim]\n")
+    console.print(
+        f"[dim]Train: {train_days}d | Test: {test_days}d"
+        f" | Rebalances: {len(result.rebalance_dates)}[/dim]\n"
+    )
 
     table = Table(title="Out-of-Sample Performance")
     table.add_column("Metric", style="cyan")
@@ -159,7 +160,9 @@ def backtest(symbols, strategy, days, train_days, test_days, exchange, cov_metho
 
 @cli.command()
 @click.argument("symbols", nargs=-1, required=True)
-@click.option("--strategy", type=click.Choice(ALL_STRATEGIES[:5], case_sensitive=False), default="max-sharpe")
+@click.option(
+    "--strategy", type=click.Choice(ALL_STRATEGIES[:5], case_sensitive=False), default="max-sharpe"
+)
 @click.option("--days", default=365, help="Days of historical data.")
 @click.option("--exchange", default="binance")
 @click.option("--simulations", default=10000, help="Number of Monte Carlo simulations.")
@@ -192,12 +195,17 @@ def stress(symbols, strategy, days, exchange, simulations, horizon, distribution
     cov = returns.cov().values
 
     console.print(f"\n[bold]Stress Test: {strategy}[/bold]")
-    console.print(f"[dim]Horizon: {horizon}d | Simulations: {simulations} | Distribution: {distribution}[/dim]\n")
+    console.print(
+        f"[dim]Horizon: {horizon}d | Simulations: {simulations}"
+        f" | Distribution: {distribution}[/dim]\n"
+    )
 
     # Monte Carlo
     with console.status("[bold cyan]Running Monte Carlo..."):
         mc = monte_carlo_stress(
-            weights, mu, cov,
+            weights,
+            mu,
+            cov,
             n_simulations=simulations,
             horizon_days=horizon,
             distribution=distribution,

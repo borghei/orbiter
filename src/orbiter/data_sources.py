@@ -99,9 +99,7 @@ class CoinGeckoClient:
                     self._symbol_id_cache[sym] = coin["id"]
         return self._symbol_id_cache.get(symbol.upper())
 
-    def get_historical_market_caps(
-        self, symbol: str, days: int = 365
-    ) -> pd.Series | None:
+    def get_historical_market_caps(self, symbol: str, days: int = 365) -> pd.Series | None:
         """Historical daily market cap for a single coin."""
         coin_id = self._get_coin_id(symbol)
         if coin_id is None:
@@ -129,9 +127,7 @@ class OnChainMetrics:
 
     SUPPORTED = {"BTC", "ETH"}
 
-    def get_active_addresses(
-        self, symbol: str, days: int = 90
-    ) -> pd.Series | None:
+    def get_active_addresses(self, symbol: str, days: int = 90) -> pd.Series | None:
         """Daily active addresses."""
         symbol = symbol.upper()
         if symbol not in self.SUPPORTED:

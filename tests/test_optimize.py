@@ -2,6 +2,7 @@
 
 import numpy as np
 import pytest
+
 from orbiter.optimize import PortfolioOptimizer
 
 # Strategies that work without extra dependencies (no factor model needed)
@@ -41,7 +42,10 @@ class TestStrategies:
     def test_min_vol_has_lower_volatility(self, optimizer):
         min_vol = optimizer.min_volatility()
         max_sharpe = optimizer.max_sharpe()
-        assert min_vol.metrics["annualized_volatility"] <= max_sharpe.metrics["annualized_volatility"] + 0.01
+        assert (
+            min_vol.metrics["annualized_volatility"]
+            <= max_sharpe.metrics["annualized_volatility"] + 0.01
+        )
 
     def test_risk_parity_balanced_risk(self, optimizer):
         result = optimizer.risk_parity()

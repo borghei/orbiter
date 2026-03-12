@@ -6,7 +6,7 @@ from dataclasses import dataclass
 
 import numpy as np
 import pandas as pd
-from scipy.cluster.hierarchy import fcluster, linkage
+from scipy.cluster.hierarchy import linkage
 from scipy.optimize import minimize
 from scipy.spatial.distance import squareform
 
@@ -25,8 +25,13 @@ class PortfolioOptimizer:
     """Optimizes crypto portfolio allocations using multiple strategies."""
 
     STRATEGIES = [
-        "max-sharpe", "min-vol", "min-cvar", "risk-parity", "hrp",
-        "regime-aware", "factor-max-sharpe",
+        "max-sharpe",
+        "min-vol",
+        "min-cvar",
+        "risk-parity",
+        "hrp",
+        "regime-aware",
+        "factor-max-sharpe",
     ]
 
     def __init__(
@@ -44,10 +49,10 @@ class PortfolioOptimizer:
         self.periods_per_year = periods_per_year
         self.factor_model = factor_model
 
-        self.expected_returns = (
-            returns.mean().values * periods_per_year
+        self.expected_returns = returns.mean().values * periods_per_year
+        self.cov_matrix = get_covariance(
+            returns, method=cov_method, periods_per_year=periods_per_year
         )
-        self.cov_matrix = get_covariance(returns, method=cov_method, periods_per_year=periods_per_year)
 
     def _portfolio_return(self, weights: np.ndarray) -> float:
         return float(weights @ self.expected_returns)
@@ -127,6 +132,7 @@ class PortfolioOptimizer:
 
     def risk_parity(self) -> OptimizationResult:
         """Equal risk contribution — each asset contributes same risk to portfolio."""
+
         def objective(weights):
             port_vol = self._portfolio_volatility(weights)
             if port_vol == 0:
@@ -299,7 +305,9 @@ class PortfolioOptimizer:
         mu = self.returns.mean().values
         cov = self.returns.cov().values
         return monte_carlo_stress(
-            weights, mu, cov,
+            weights,
+            mu,
+            cov,
             n_simulations=n_simulations,
             horizon_days=horizon_days,
             distribution=distribution,

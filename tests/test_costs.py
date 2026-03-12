@@ -1,7 +1,7 @@
 """Tests for transaction cost modeling."""
 
 import numpy as np
-import pytest
+
 from orbiter.costs import FeeSchedule, compute_rebalance_cost, estimate_slippage
 
 

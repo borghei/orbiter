@@ -18,12 +18,14 @@ def sample_returns():
     daily_vol = np.array([0.03, 0.04, 0.06, 0.055])
 
     # Correlated returns via Cholesky
-    corr = np.array([
-        [1.0, 0.7, 0.5, 0.4],
-        [0.7, 1.0, 0.6, 0.5],
-        [0.5, 0.6, 1.0, 0.6],
-        [0.4, 0.5, 0.6, 1.0],
-    ])
+    corr = np.array(
+        [
+            [1.0, 0.7, 0.5, 0.4],
+            [0.7, 1.0, 0.6, 0.5],
+            [0.5, 0.6, 1.0, 0.6],
+            [0.4, 0.5, 0.6, 1.0],
+        ]
+    )
     L = np.linalg.cholesky(corr)
 
     raw = rng.randn(n_days, n_assets)

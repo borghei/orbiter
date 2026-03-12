@@ -22,7 +22,15 @@ symbols = [s.strip().upper() for s in symbols_input.split(",") if s.strip()]
 
 strategy = st.sidebar.selectbox(
     "Strategy",
-    ["max-sharpe", "min-vol", "min-cvar", "risk-parity", "hrp", "regime-aware", "factor-max-sharpe"],
+    [
+        "max-sharpe",
+        "min-vol",
+        "min-cvar",
+        "risk-parity",
+        "hrp",
+        "regime-aware",
+        "factor-max-sharpe",
+    ],
     index=0,
 )
 
@@ -93,7 +101,7 @@ if use_factors or strategy == "factor-max-sharpe":
 
 
 # --- Optimization ---
-from orbiter.optimize import PortfolioOptimizer
+from orbiter.optimize import PortfolioOptimizer  # noqa: E402
 
 with st.spinner(f"Optimizing ({strategy})..."):
     optimizer = PortfolioOptimizer(returns, cov_method=cov_method, factor_model=factor_model)
@@ -105,10 +113,12 @@ col1, col2 = st.columns([1, 1])
 # Weights
 with col1:
     st.subheader("Optimal Allocation")
-    weights_df = pd.DataFrame({
-        "Asset": result.weights.index,
-        "Weight": result.weights.values,
-    })
+    weights_df = pd.DataFrame(
+        {
+            "Asset": result.weights.index,
+            "Weight": result.weights.values,
+        }
+    )
     weights_df = weights_df[weights_df["Weight"] > 0.001]
     fig_pie = px.pie(
         weights_df,
@@ -131,16 +141,18 @@ with col2:
     metric_cols[3].metric("CVaR (95%)", f"{m['cvar_95']:.2%}")
 
     st.dataframe(
-        pd.DataFrame([
-            {"Metric": "Ann. Return", "Value": f"{m['annualized_return']:+.1%}"},
-            {"Metric": "Ann. Volatility", "Value": f"{m['annualized_volatility']:.1%}"},
-            {"Metric": "Sharpe Ratio", "Value": f"{m['sharpe_ratio']:.2f}"},
-            {"Metric": "Sortino Ratio", "Value": f"{m['sortino_ratio']:.2f}"},
-            {"Metric": "Max Drawdown", "Value": f"{m['max_drawdown']:.1%}"},
-            {"Metric": "Calmar Ratio", "Value": f"{m['calmar_ratio']:.2f}"},
-            {"Metric": "CVaR (95%)", "Value": f"{m['cvar_95']:.2%}"},
-            {"Metric": "Omega Ratio", "Value": f"{m['omega_ratio']:.2f}"},
-        ]).set_index("Metric"),
+        pd.DataFrame(
+            [
+                {"Metric": "Ann. Return", "Value": f"{m['annualized_return']:+.1%}"},
+                {"Metric": "Ann. Volatility", "Value": f"{m['annualized_volatility']:.1%}"},
+                {"Metric": "Sharpe Ratio", "Value": f"{m['sharpe_ratio']:.2f}"},
+                {"Metric": "Sortino Ratio", "Value": f"{m['sortino_ratio']:.2f}"},
+                {"Metric": "Max Drawdown", "Value": f"{m['max_drawdown']:.1%}"},
+                {"Metric": "Calmar Ratio", "Value": f"{m['calmar_ratio']:.2f}"},
+                {"Metric": "CVaR (95%)", "Value": f"{m['cvar_95']:.2%}"},
+                {"Metric": "Omega Ratio", "Value": f"{m['omega_ratio']:.2f}"},
+            ]
+        ).set_index("Metric"),
         use_container_width=True,
     )
 
@@ -157,12 +169,17 @@ if not frontier.empty:
         y="return",
         color="sharpe",
         color_continuous_scale="Viridis",
-        labels={"volatility": "Annualized Volatility", "return": "Annualized Return", "sharpe": "Sharpe"},
+        labels={
+            "volatility": "Annualized Volatility",
+            "return": "Annualized Return",
+            "sharpe": "Sharpe",
+        },
     )
     opt_ret = result.metrics["annualized_return"]
     opt_vol = result.metrics["annualized_volatility"]
     fig_ef.add_scatter(
-        x=[opt_vol], y=[opt_ret],
+        x=[opt_vol],
+        y=[opt_ret],
         mode="markers",
         marker=dict(size=15, color="red", symbol="star"),
         name=f"Optimal ({strategy})",
@@ -171,7 +188,8 @@ if not frontier.empty:
         asset_ret = float(returns[col].mean() * 365)
         asset_vol = float(returns[col].std() * np.sqrt(365))
         fig_ef.add_scatter(
-            x=[asset_vol], y=[asset_ret],
+            x=[asset_vol],
+            y=[asset_ret],
             mode="markers+text",
             marker=dict(size=10, color="orange"),
             text=[col],
@@ -193,10 +211,12 @@ with col_perf1:
     cum_port = (port_returns.cumsum().apply(np.exp) - 1) * 100
     cum_equal = (equal_returns.cumsum().apply(np.exp) - 1) * 100
 
-    cum_df = pd.DataFrame({
-        f"Optimized ({strategy})": cum_port,
-        "Equal Weight": cum_equal,
-    })
+    cum_df = pd.DataFrame(
+        {
+            f"Optimized ({strategy})": cum_port,
+            "Equal Weight": cum_equal,
+        }
+    )
     st.line_chart(cum_df, y_label="Cumulative Return (%)")
 
 with col_perf2:
@@ -257,22 +277,29 @@ if run_stress:
     with sc1:
         with st.spinner("Running Monte Carlo..."):
             mc = monte_carlo_stress(
-                weights, mu, cov,
+                weights,
+                mu,
+                cov,
                 n_simulations=10000,
                 horizon_days=stress_horizon,
                 distribution=stress_dist,
             )
 
         st.write(f"**Monte Carlo ({stress_dist}, {stress_horizon}d)**")
-        st.dataframe(pd.DataFrame([
-            {"Metric": "VaR (95%)", "Value": f"{mc['var_95']:.2%}"},
-            {"Metric": "CVaR (95%)", "Value": f"{mc['cvar_95']:.2%}"},
-            {"Metric": "VaR (99%)", "Value": f"{mc['var_99']:.2%}"},
-            {"Metric": "CVaR (99%)", "Value": f"{mc['cvar_99']:.2%}"},
-            {"Metric": "Median Return", "Value": f"{mc['median_return']:+.2%}"},
-            {"Metric": "Worst Case", "Value": f"{mc['worst_case']:.2%}"},
-            {"Metric": "P(Loss)", "Value": f"{mc['prob_loss']:.1%}"},
-        ]).set_index("Metric"), use_container_width=True)
+        st.dataframe(
+            pd.DataFrame(
+                [
+                    {"Metric": "VaR (95%)", "Value": f"{mc['var_95']:.2%}"},
+                    {"Metric": "CVaR (95%)", "Value": f"{mc['cvar_95']:.2%}"},
+                    {"Metric": "VaR (99%)", "Value": f"{mc['var_99']:.2%}"},
+                    {"Metric": "CVaR (99%)", "Value": f"{mc['cvar_99']:.2%}"},
+                    {"Metric": "Median Return", "Value": f"{mc['median_return']:+.2%}"},
+                    {"Metric": "Worst Case", "Value": f"{mc['worst_case']:.2%}"},
+                    {"Metric": "P(Loss)", "Value": f"{mc['prob_loss']:.1%}"},
+                ]
+            ).set_index("Metric"),
+            use_container_width=True,
+        )
 
     with sc2:
         from orbiter.covariance import get_covariance
@@ -289,7 +316,6 @@ if run_stress:
 if run_backtest:
     st.subheader("Walk-Forward Backtest")
     from orbiter.backtest import WalkForwardBacktest
-    from orbiter.metrics import compute_metrics
 
     with st.spinner("Running walk-forward backtest..."):
         bt = WalkForwardBacktest(
@@ -307,12 +333,14 @@ if run_backtest:
         st.write(f"**Rebalances:** {len(bt_result.rebalance_dates)}")
         bm = bt_result.metrics
         st.dataframe(
-            pd.DataFrame([
-                {"Metric": "Ann. Return", "Value": f"{bm['annualized_return']:+.1%}"},
-                {"Metric": "Sharpe Ratio", "Value": f"{bm['sharpe_ratio']:.2f}"},
-                {"Metric": "Max Drawdown", "Value": f"{bm['max_drawdown']:.1%}"},
-                {"Metric": "CVaR (95%)", "Value": f"{bm['cvar_95']:.2%}"},
-            ]).set_index("Metric"),
+            pd.DataFrame(
+                [
+                    {"Metric": "Ann. Return", "Value": f"{bm['annualized_return']:+.1%}"},
+                    {"Metric": "Sharpe Ratio", "Value": f"{bm['sharpe_ratio']:.2f}"},
+                    {"Metric": "Max Drawdown", "Value": f"{bm['max_drawdown']:.1%}"},
+                    {"Metric": "CVaR (95%)", "Value": f"{bm['cvar_95']:.2%}"},
+                ]
+            ).set_index("Metric"),
             use_container_width=True,
         )
 

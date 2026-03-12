@@ -2,7 +2,7 @@
 
 import numpy as np
 import pandas as pd
-import pytest
+
 from orbiter.costs import FeeSchedule
 from orbiter.rebalance import (
     RebalanceConfig,

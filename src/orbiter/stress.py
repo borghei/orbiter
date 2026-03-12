@@ -6,7 +6,6 @@ from dataclasses import dataclass
 
 import numpy as np
 import pandas as pd
-from scipy import stats
 
 
 @dataclass
@@ -89,9 +88,13 @@ def monte_carlo_stress(
 
     return {
         "var_95": float(terminal_returns[var_95_idx]),
-        "cvar_95": float(terminal_returns[:var_95_idx].mean()) if var_95_idx > 0 else float(terminal_returns[0]),
+        "cvar_95": float(terminal_returns[:var_95_idx].mean())
+        if var_95_idx > 0
+        else float(terminal_returns[0]),
         "var_99": float(terminal_returns[var_99_idx]),
-        "cvar_99": float(terminal_returns[:var_99_idx].mean()) if var_99_idx > 0 else float(terminal_returns[0]),
+        "cvar_99": float(terminal_returns[:var_99_idx].mean())
+        if var_99_idx > 0
+        else float(terminal_returns[0]),
         "median_return": float(np.median(terminal_returns)),
         "worst_case": float(terminal_returns[0]),
         "best_case": float(terminal_returns[-1]),

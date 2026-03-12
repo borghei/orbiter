@@ -67,7 +67,6 @@ def simulate_rebalancing(
     Tracks day-by-day portfolio value with weight drift and rebalancing.
     """
     n_days = len(returns)
-    n_assets = len(target_weights)
     fee_schedule = config.fee_schedule or FeeSchedule(maker=0, taker=0, spread_bps=0)
 
     # Initialize
@@ -99,13 +98,10 @@ def simulate_rebalancing(
         if config.trigger == RebalanceTrigger.CALENDAR:
             should_rebalance = days_since_rebalance >= config.calendar_days
         elif config.trigger == RebalanceTrigger.THRESHOLD:
-            should_rebalance = check_drift(
-                current_weights, target_weights, config.drift_threshold
-            )
+            should_rebalance = check_drift(current_weights, target_weights, config.drift_threshold)
         elif config.trigger == RebalanceTrigger.HYBRID:
-            should_rebalance = (
-                days_since_rebalance >= config.calendar_days
-                and check_drift(current_weights, target_weights, config.drift_threshold)
+            should_rebalance = days_since_rebalance >= config.calendar_days and check_drift(
+                current_weights, target_weights, config.drift_threshold
             )
 
         # Apply rebalancing
@@ -139,9 +135,7 @@ def simulate_rebalancing(
             {"date": date, **{col: w for col, w in zip(returns.columns, current_weights)}}
         )
 
-    portfolio_returns = pd.Series(
-        portfolio_returns_list, index=returns.index, name="portfolio"
-    )
+    portfolio_returns = pd.Series(portfolio_returns_list, index=returns.index, name="portfolio")
     weights_history = pd.DataFrame(weights_records).set_index("date")
 
     return RebalanceResult(

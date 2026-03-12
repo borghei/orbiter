@@ -51,9 +51,7 @@ class WalkForwardBacktest:
         min_required = self.train_days + self.test_days
 
         if total_days < min_required:
-            raise ValueError(
-                f"Need at least {min_required} days of data, got {total_days}."
-            )
+            raise ValueError(f"Need at least {min_required} days of data, got {total_days}.")
 
         oos_returns_list: list[pd.Series] = []
         weights_records: list[dict] = []

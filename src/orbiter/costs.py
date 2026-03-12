@@ -68,9 +68,7 @@ def compute_rebalance_cost(
     total_fee = float(np.sum(trade_values * fee_schedule.effective_fee))
 
     # Spread cost
-    spread_cost = float(
-        np.sum(trade_values * fee_schedule.spread_bps / 10000 / 2)
-    )
+    spread_cost = float(np.sum(trade_values * fee_schedule.spread_bps / 10000 / 2))
 
     # Slippage
     slippage_cost = 0.0
