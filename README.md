@@ -62,7 +62,7 @@ You're studying portfolio theory, crypto markets, or quantitative finance and ne
 You're building a trading system, a portfolio dashboard, or an automated rebalancing bot. Orbiter gives you a clean Python API to plug into your stack.
 
 **What you get:**
-- `pip install orbiter` and import directly — no API keys needed for price data
+- `pip install orbiter-crypto` and import directly — no API keys needed for price data
 - Programmatic access to all strategies, metrics, and stress tests
 - Rebalancing simulation with transaction cost modeling (maker/taker fees, slippage)
 - Calendar, threshold, or hybrid rebalancing triggers
@@ -82,13 +82,13 @@ You manage crypto allocations for clients or a fund and need institutional-grade
 ## Installation
 
 ```bash
-pip install orbiter
+pip install orbiter-crypto
 ```
 
 With the interactive dashboard:
 
 ```bash
-pip install orbiter[dashboard]
+pip install orbiter-crypto[dashboard]
 ```
 
 Or install from source:

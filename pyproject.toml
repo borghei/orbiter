@@ -1,9 +1,9 @@
 [project]
-name = "orbiter"
+name = "orbiter-crypto"
 version = "0.2.0"
 description = "Lightweight crypto portfolio optimizer. Efficient frontier, HRP, Risk Parity — with real risk metrics and interactive charts."
 readme = "README.md"
-license = "MIT + Commons Clause"
+license = {file = "LICENSE"}
 requires-python = ">=3.11"
 authors = [{ name = "Brian Borghei", email = "borghei.mohammadamin@gmail.com" }]
 keywords = ["crypto", "portfolio", "optimization", "finance", "risk"]
@@ -34,6 +34,11 @@ dev = ["pytest>=8.0", "pytest-cov", "ruff"]
 
 [project.scripts]
 orbiter = "orbiter.cli:cli"
+
+[project.urls]
+Homepage = "https://github.com/borghei/orbiter"
+Repository = "https://github.com/borghei/orbiter"
+Issues = "https://github.com/borghei/orbiter/issues"
 
 [build-system]
 requires = ["hatchling"]
