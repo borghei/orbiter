@@ -1,6 +1,6 @@
 [project]
 name = "orbiter-crypto"
-version = "0.2.0"
+version = "0.2.1"
 description = "Lightweight crypto portfolio optimizer. Efficient frontier, HRP, Risk Parity — with real risk metrics and interactive charts."
 readme = "README.md"
 license = {file = "LICENSE"}

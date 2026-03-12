@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/orbiter-banner.png" alt="Orbiter" width="100%">
+  <img src="https://raw.githubusercontent.com/borghei/orbiter/main/assets/orbiter-banner.png" alt="Orbiter" width="100%">
 </p>
 
 <p align="center">
@@ -162,7 +162,7 @@ Strategy: Hierarchical Risk Parity
 Launch with `orbiter dashboard` and open http://localhost:8501.
 
 <p align="center">
-  <img src="assets/screenshots/allocation-metrics.png" alt="Dashboard — Allocation and Metrics" width="100%">
+  <img src="https://raw.githubusercontent.com/borghei/orbiter/main/assets/screenshots/allocation-metrics.png" alt="Dashboard — Allocation and Metrics" width="100%">
 </p>
 
 The dashboard provides:
@@ -173,7 +173,7 @@ The dashboard provides:
 - **Efficient frontier** — interactive scatter plot showing the risk-return tradeoff
 
 <p align="center">
-  <img src="assets/screenshots/efficient-frontier.png" alt="Efficient Frontier" width="100%">
+  <img src="https://raw.githubusercontent.com/borghei/orbiter/main/assets/screenshots/efficient-frontier.png" alt="Efficient Frontier" width="100%">
 </p>
 
 - **Performance chart** — cumulative returns vs equal-weight benchmark
